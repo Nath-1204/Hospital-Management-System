@@ -1,0 +1,87 @@
+import doctorModel from '../models/doctorModel.js';
+import userModel from '../models/userModel.js';
+
+
+// Créer un nouveau médecin 
+const createDoctor = async (req, res) => {
+
+  try {
+    const { name, email, password, specialization, experience, fee, ...rest } = req.body;
+
+    // Vérifier si l'email existe déjà
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Cet email est déjà utilisé.' });
+    }
+
+    // Hacher le mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Créer l'utilisateur avec le rôle 'doctor'
+    const user = new userModel({
+      name,
+      email,
+      password: hashedPassword,
+      role: 'doctor',
+      ...rest
+    });
+    await user.save();
+
+    // Créer le profil médecin
+    const doctor = new doctorModel({
+      userId: user._id,
+      specialization,
+      experience,
+      fee,
+    });
+    await doctor.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Médecin créé avec succès',
+      doctor: {
+        user: { id: user._id, name: user.name, email: user.email },
+        specialization,
+        experience,
+        fee,
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Récupérer tous les médecins 
+const getAllDoctors = async (req, res) => {
+
+  try {
+    
+    const doctors = await doctorModel.find().populate('userId', 'name email image phone address');
+    res.json({ success: true, doctors });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Ajouter un médecin (par Admin)
+const updateDoctorAvailability = async (req, res) => {
+
+  try {
+
+    const { doctorId, availability } = req.body;
+    const doctor = await doctorModel.findById(doctorId);
+
+    if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+    doctor.availability = availability;
+    await doctor.save();
+    res.json({ success: true, doctor });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { createDoctor, getAllDoctors, updateDoctorAvailability };
