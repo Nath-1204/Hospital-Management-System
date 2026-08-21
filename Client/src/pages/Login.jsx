@@ -142,8 +142,8 @@ const Login = () => {
               <>
                 <svg className="animate-spin h-5 w-5 text-indigo-600" viewBox="0 0 24 24">
                   <circle
-                    cx="20"
-                    cy="20"
+                    cx="10"
+                    cy="10"
                     r="10"
                     fill="none"
                     stroke="currentColor"

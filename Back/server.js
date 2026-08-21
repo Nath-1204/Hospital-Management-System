@@ -9,6 +9,7 @@ import patientRouter from "./routes/patientRouter.js";
 import dashboardRouter from "./routes/dashboardRouter.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import seedAdmin from "./configs/adminSeed.js";
+import uploadRouter from "./routes/uploadRouter.js";
 
 //  app config
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/doctors", doctorRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/patients", patientRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/upload", uploadRouter);
 
 app.get("/", (req, res) => {
     res.send('API is running....');

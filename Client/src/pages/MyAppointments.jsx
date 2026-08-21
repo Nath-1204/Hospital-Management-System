@@ -5,9 +5,10 @@ import toast from 'react-hot-toast';
 import {
   FaCalendarCheck, FaUserMd, FaUser, FaSignOutAlt, FaBars,
   FaTimes, FaStethoscope, FaHome, FaCheckCircle, FaTimesCircle,
-  FaClock, FaPrescription,
+  FaClock, FaPrescription, FaFileInvoiceDollar,
 } from 'react-icons/fa';
 import { AuthContext } from "../context/AuthContext"
+import Sidebar from '../components/Sidebar';
 
 
 const MyAppointments = () => {
@@ -16,7 +17,7 @@ const MyAppointments = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
-  const { user, token, logout } = useContext(AuthContext);
+  const { backendUrl, user, token, logout } = useContext(AuthContext);
 
   useEffect(() => {
 
@@ -24,7 +25,7 @@ const MyAppointments = () => {
 
       try {
         const config = { headers: { Authorization: `Bearer ${token}` }};
-        const response = await axios.get('/api/appointments/myAppointments', config);
+        const response = await axios.get(backendUrl + '/api/appointments/myAppointments', config);
         
         if (response.data.success) {
           setAppointments(response.data.appointments);
@@ -52,7 +53,7 @@ const MyAppointments = () => {
 
       const config = {headers: { Authorization: `Bearer ${token}` }};
 
-      const response = await axios.put(`/api/appointments/${appointmentId}/status`, { status: newStatus }, config);
+      const response = await axios.put(backendUrl + `/api/appointments/${appointmentId}/status`, { status: newStatus }, config);
       
       if (response.data.success) {
         toast.success(`Appointment ${newStatus} successful`);
@@ -87,6 +88,7 @@ const MyAppointments = () => {
     const base = [
       { label: 'Dashboard', icon: FaHome, path: `/${user?.role}-dashboard` },
       { label: 'My Appointment', icon: FaCalendarCheck, path: '/my-appointments' },
+      { label: 'My Bills', icon: FaFileInvoiceDollar, path: '/my-bills' },
     ];
     if (user?.role === 'doctor') {
       base.push({ label: 'Prescriptions', icon: FaPrescription, path: '/prescriptions' });
@@ -99,7 +101,6 @@ const MyAppointments = () => {
 
   const navItems = getNavItems();
 
-  // Affichage du statut avec badge coloré
   const renderStatusBadge = (status) => {
     const classes = {
       pending: 'bg-amber-100 text-amber-700',
@@ -115,7 +116,6 @@ const MyAppointments = () => {
     );
   };
 
-  // Boutons d'action selon le rôle et le statut
   const renderActions = (app) => {
     const isPatient = user?.role === 'patient';
     const isDoctor = user?.role === 'doctor';
@@ -157,7 +157,7 @@ const MyAppointments = () => {
             onClick={() => updateStatus(app._id, 'completed')}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            To end
+            End
           </button>
         );
       }
@@ -179,69 +179,16 @@ const MyAppointments = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <div
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-indigo-700 text-white transition-all duration-300 ease-in-out flex flex-col shadow-lg`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-indigo-600">
-          <div className={`flex items-center gap-2 ${!sidebarOpen && 'justify-center w-full'}`}>
-            <FaStethoscope className="text-2xl text-cyan-300" />
-            {sidebarOpen && <span className="text-xl font-bold">HMS</span>}
-          </div>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-white hover:text-cyan-200 transition"
-          >
-            {sidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-          </button>
-        </div>
+      
+      <Sidebar 
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        logout={logout}
+        navItems={navItems}
+        activePath="/my-appointments"
+      />
 
-        <div
-          className={`p-4 border-b border-indigo-600 flex items-center gap-3 ${
-            !sidebarOpen && 'justify-center'
-          }`}
-        >
-          <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">
-            {user?.name?.charAt(0) || 'U'}
-          </div>
-          {sidebarOpen && (
-            <div className="flex-1">
-              <p className="font-medium">{user?.name || 'Utilisateur'}</p>
-              <p className="text-xs text-cyan-200 capitalize">{user?.role || 'patient'}</p>
-            </div>
-          )}
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-4">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.path}
-              className={`flex items-center gap-3 px-4 py-3 hover:bg-indigo-600 transition-colors ${
-                item.path === '/my-appointments' ? 'bg-indigo-800 border-r-4 border-cyan-400' : ''
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(item.path);
-              }}
-            >
-              <item.icon className="text-xl flex-shrink-0" />
-              {sidebarOpen && <span>{item.label}</span>}
-            </a>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-indigo-600">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-2 rounded-lg hover:bg-red-600/30 transition text-red-300 hover:text-white"
-          >
-            <FaSignOutAlt className="text-xl flex-shrink-0" />
-            {sidebarOpen && <span>Logout</span>}
-          </button>
-        </div>
-      </div>
-
-      {/* Contenu principal */}
       <div className="flex-1 flex flex-col overflow-y-auto">
         <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-800">My Appointments</h1>

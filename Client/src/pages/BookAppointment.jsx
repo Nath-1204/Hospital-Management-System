@@ -18,10 +18,9 @@ const BookAppointment = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user, token, logout } = useContext(AuthContext);
+  const { backendUrl, user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Récupérer la liste des médecins
   useEffect(() => {
 
     const fetchDoctors = async () => {
@@ -29,7 +28,7 @@ const BookAppointment = () => {
       try {
 
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.get('/api/doctors/allDoctor', config);
+        const response = await axios.get(backendUrl + '/api/doctors/allDoctor', config);
         
         if (response.data.success) {
           setDoctors(response.data.doctors);
@@ -73,13 +72,11 @@ const BookAppointment = () => {
     }
   }, [selectedDoctor, doctors]);
 
-  // Extraire les dates uniques à partir des créneaux
   const getUniqueDates = () => {
     const dates = availableSlots.map((slot) => slot.split('T')[0]);
     return [...new Set(dates)];
   };
 
-  // Extraire les heures disponibles pour une date donnée
   const getTimesForDate = (date) => {
     return availableSlots
       .filter((slot) => slot.startsWith(date))
@@ -106,7 +103,7 @@ const BookAppointment = () => {
         notes: '',
       };
 
-      const response = await axios.post('/api/appointments/book', payload, config);
+      const response = await axios.post(backendUrl + '/api/appointments/book', payload, config);
       
       if (response.data.success) {
         toast.success('Appointment successfully booked !');

@@ -84,4 +84,25 @@ const updateDoctorAvailability = async (req, res) => {
   }
 };
 
-export { createDoctor, getAllDoctors, updateDoctorAvailability };
+// Supprimer un médecin 
+const deleteDoctor = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const doctor = await doctorModel.findById(id);
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+
+    await doctorModel.findByIdAndDelete(id);
+    await userModel.findByIdAndDelete(doctor.userId);
+    res.json({ success: true, message: 'Doctor deleted successfully' });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { createDoctor, getAllDoctors, updateDoctorAvailability, deleteDoctor };

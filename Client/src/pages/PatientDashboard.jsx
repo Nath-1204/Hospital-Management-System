@@ -9,7 +9,7 @@ import {
   FaMoneyBillWave,
 } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
-
+import Sidebar from '../components/Sidebar';
 
 
 
@@ -19,7 +19,7 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
-  const { user, token, logout } = useContext(AuthContext)
+  const { backendUrl, user, token, logout } = useContext(AuthContext)
 
   useEffect(() => {
 
@@ -28,7 +28,7 @@ const PatientDashboard = () => {
       try {
 
         const config = { headers: { Authorization: `Bearer ${token}` }, };
-        const response = await axios.get('/api/dashboard/patient', config);
+        const response = await axios.get(backendUrl + '/api/dashboard/patient', config);
         
         if (response.data.success) {
           setStats(response.data.stats);
@@ -57,7 +57,6 @@ const PatientDashboard = () => {
     toast.success('Déconnecté');
   };
 
-  // Construction des cartes de statistiques
   const statsCards = [
     {
       label: 'Total Appointments',
@@ -85,7 +84,7 @@ const PatientDashboard = () => {
     },
     {
       label: 'Total spent',
-      value: `${stats?.totalSpent || 0} €`,
+      value: `${stats?.totalSpent || 0} Ar`,
       icon: FaMoneyBillWave,
       color: 'bg-purple-100 text-purple-600',
     },
@@ -112,65 +111,14 @@ const PatientDashboard = () => {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
 
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-indigo-700 text-white transition-all duration-300 ease-in-out flex flex-col shadow-lg`}>
-        <div className="flex items-center justify-between p-4 border-b border-indigo-600">
-          <div className={`flex items-center gap-2 ${!sidebarOpen && 'justify-center w-full'}`}>
-            <FaStethoscope className="text-2xl text-cyan-300" />
-            {sidebarOpen && <span className="text-xl font-bold">HMS</span>}
-          </div>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-white hover:text-cyan-200 transition"
-          >
-            {sidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-          </button>
-        </div>
-
-        <div
-          className={`p-4 border-b border-indigo-600 flex items-center gap-3 ${
-            !sidebarOpen && 'justify-center'
-          }`}
-        >
-          <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">
-            {user?.name?.charAt(0) || 'U'}
-          </div>
-          {sidebarOpen && (
-            <div className="flex-1">
-              <p className="font-medium">{user?.name || 'Patient'}</p>
-              <p className="text-xs text-cyan-200 capitalize">{user?.role || 'patient'}</p>
-            </div>
-          )}
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-4">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.path}
-              className={`flex items-center gap-3 px-4 py-3 hover:bg-indigo-600 transition-colors ${
-                item.path === '/patient-dashboard' ? 'bg-indigo-800 border-r-4 border-cyan-400' : ''
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(item.path);
-              }}
-            >
-              <item.icon className="text-xl flex-shrink-0" />
-              {sidebarOpen && <span>{item.label}</span>}
-            </a>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-indigo-600">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-2 rounded-lg hover:bg-red-600/30 transition text-red-300 hover:text-white"
-          >
-            <FaSignOutAlt className="text-xl flex-shrink-0" />
-            {sidebarOpen && <span>Deconnexion</span>}
-          </button>
-        </div>
-      </div>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        logout={logout}
+        navItems={navItems}
+        activePath="/patient-dashboard"
+      />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
         <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b border-gray-200">
