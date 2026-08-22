@@ -9,7 +9,10 @@ import Profile from './pages/Profile'
 import AdminDashboard from './pages/AdminDashboard'
 import Patients from './pages/Patients'
 import Doctors from './pages/Doctors'
-
+import { Navigate } from "react-router-dom"
+import AdminProfile from './pages/AdminProfile'
+import AdminAppointments from './pages/AdminAppointments'
+ 
 
 const App = () => {
 
@@ -17,6 +20,7 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/patient-dashboard" element={<PatientDashboard />} />
         <Route path="/my-appointments" element={<MyAppointments />} />
@@ -25,6 +29,8 @@ const App = () => {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/patients" element={<Patients />} />
         <Route path="/doctors" element={<Doctors />} />
+        <Route path="/admin-profile" element={<AdminProfile />} />
+        <Route path="/appointments" element={<AdminAppointments />} />
       </Routes>
     </div>
   )

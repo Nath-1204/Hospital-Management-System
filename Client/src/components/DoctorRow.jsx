@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
+import assets from '../assets/assets';
 
 
 const DoctorRow = ({ doctor, onDelete, onUpdate }) => {
@@ -46,10 +47,10 @@ const DoctorRow = ({ doctor, onDelete, onUpdate }) => {
   };
 
   return (
-    <tr className="hover:bg-gray-50 transition">
+    <tr className="hover:bg-gray-200 transition">
       <td className="px-4 py-3 text-sm text-gray-800 flex items-center gap-2">
         <img
-          src={doctor.userId?.image || 'https://via.placeholder.com/30'}
+          src={doctor.userId?.image || assets.defaultImage}
           alt={doctor.userId?.name}
           className="w-8 h-8 rounded-full object-cover"
         />

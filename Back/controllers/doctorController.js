@@ -1,34 +1,33 @@
 import doctorModel from '../models/doctorModel.js';
 import userModel from '../models/userModel.js';
-
+import bcrypt from "bcryptjs"
 
 // Créer un nouveau médecin 
 const createDoctor = async (req, res) => {
 
   try {
-    const { name, email, password, specialization, experience, fee, ...rest } = req.body;
+    const { name, email, password, specialization, experience, fee, image, ...rest } = req.body;
 
     // Vérifier si l'email existe déjà
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Cet email est déjà utilisé.' });
+      return res.status(400).json({ success: false, message: 'This email address is already in use.' });
     }
 
     // Hacher le mot de passe
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Créer l'utilisateur avec le rôle 'doctor'
     const user = new userModel({
       name,
       email,
       password: hashedPassword,
       role: 'doctor',
+      image: image || '',
       ...rest
     });
     await user.save();
 
-    // Créer le profil médecin
     const doctor = new doctorModel({
       userId: user._id,
       specialization,
@@ -39,7 +38,7 @@ const createDoctor = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Médecin créé avec succès',
+      message: 'Doctor created successfully',
       doctor: {
         user: { id: user._id, name: user.name, email: user.email },
         specialization,

@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import DoctorRow from '../components/DoctorRow';
 import AddDoctor from '../components/AddDoctor';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   FaUser, FaHome, FaUserMd, FaUsers, FaCalendarCheck,
   FaFileInvoiceDollar, FaChartLine, FaPlus,
@@ -18,6 +19,7 @@ const Doctors = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null, name: '' });
   const navigate = useNavigate();
   const { backendUrl, user, token, logout } = useContext(AuthContext);
 
@@ -50,16 +52,19 @@ const Doctors = () => {
   }, [token, user, navigate]);
 
   const handleDelete = async (id, name) => {
+    setConfirmModal({ isOpen: true, id, name });
+  };
 
-    if (!window.confirm(`Are you sure you want to delete doctor "${name}"?`)) return;
+  const confirmDelete = async () => {
+    const { id, name } = confirmModal;
     
     try {
 
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.delete(`/api/doctors/${id}`, config);
+      const response = await axios.delete(backendUrl + `/api/doctors/${id}`, config);
       
       if (response.data.success) {
-        toast.success('Doctor deleted successfully');
+        toast.success(`Doctor "${name}" deleted successfully`);
         setDoctors(doctors.filter((d) => d._id !== id));
       } else {
         toast.error('Deletion failed');
@@ -67,7 +72,13 @@ const Doctors = () => {
 
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error during deletion');
+    } finally {
+      setConfirmModal({ isOpen: false, id: null, name: '' });
     }
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, id: null, name: '' });
   };
 
   const navItems = [
@@ -77,7 +88,7 @@ const Doctors = () => {
     { label: 'Appointments', icon: FaCalendarCheck, path: '/appointments' },
     { label: 'Billing', icon: FaFileInvoiceDollar, path: '/billing' },
     { label: 'Reports', icon: FaChartLine, path: '/reports' },
-    { label: 'Profile', icon: FaUser, path: '/profile' },
+    { label: 'Profile', icon: FaUser, path: '/admin-profile' },
   ];
 
   if (loading) {
@@ -170,6 +181,17 @@ const Doctors = () => {
         onClose={() => setShowModal(false)}
         onDoctorAdded={fetchDoctors}
       />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete doctor "${confirmModal.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
     </div>
   );
 };

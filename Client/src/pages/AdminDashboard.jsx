@@ -63,7 +63,7 @@ const AdminDashboard = () => {
     { label: 'Appointments', icon: FaCalendarCheck, path: '/appointments' },
     { label: 'Billing', icon: FaFileInvoiceDollar, path: '/billing' },
     { label: 'Reports', icon: FaChartLine, path: '/reports' },
-    { label: 'Profile', icon: FaUser, path: '/profile' },
+    { label: 'Profile', icon: FaUser, path: '/admin-profile' },
   ];
 
   const statsCards = [

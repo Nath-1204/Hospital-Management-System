@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
-import {
-  FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt,
-  FaVenusMars, FaStethoscope, FaSignOutAlt, FaBars, FaTimes,
-  FaHome, FaCalendarCheck, FaSave, FaUserMd, FaCamera, FaFileInvoiceDollar,
-} from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
 import assets from '../assets/assets';
+import {
+  FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt,
+  FaVenusMars, FaStethoscope, FaHome, FaCalendarCheck, FaSave,
+  FaCamera, FaFileInvoiceDollar, FaChartLine, FaUserMd, FaUsers,
+} from 'react-icons/fa';
 
 
-const Profile = () => {
+const AdminProfile = () => {
 
   const [formData, setFormData] = useState({
     name: '',
@@ -21,9 +21,6 @@ const Profile = () => {
     gender: '',
     dob: '',
     address: { line1: '', city: '' },
-    medicalHistory: '',
-    bloodGroup: '',
-    allergies: [],
     image: `${assets.defaultImage}`,
   });
   const [loading, setLoading] = useState(true);
@@ -33,7 +30,6 @@ const Profile = () => {
   const { backendUrl, user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-
   useEffect(() => {
 
     const fetchProfile = async () => {
@@ -41,22 +37,20 @@ const Profile = () => {
       try {
 
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.get(backendUrl + `/api/patients/${user.id}`, config);
-
+        const response = await axios.get(backendUrl + '/api/auth/profile', config);
+        
         if (response.data.success) {
-          const patient = response.data.patient;
+
+          const adminData = response.data.user;
 
           setFormData({
-            name: patient.name || '',
-            email: patient.email || '',
-            phone: patient.phone || '',
-            gender: patient.gender || 'Not Selected',
-            dob: patient.dob || '',
-            address: patient.address || { line1: '', city: '' },
-            medicalHistory: patient.medicalHistory || '',
-            bloodGroup: patient.bloodGroup || '',
-            allergies: patient.allergies || [],
-            image: patient.image || `${assets.defaultImage}`,
+            name: adminData.name || '',
+            email: adminData.email || '',
+            phone: adminData.phone || '',
+            gender: adminData.gender || 'Not Selected',
+            dob: adminData.dob || '',
+            address: adminData.address || { line1: '', city: '' },
+            image: adminData.image || `${assets.defaultImage}`,
           });
         } else {
           toast.error('Unable to load profile');
@@ -74,6 +68,7 @@ const Profile = () => {
     } else {
       navigate('/login');
     }
+
   }, [token, user, navigate]);
 
   const handleChange = (e) => {
@@ -89,14 +84,8 @@ const Profile = () => {
     }));
   };
 
-  const handleAllergiesChange = (e) => {
-    const value = e.target.value;
-    const allergiesArray = value.split(',').map((item) => item.trim()).filter(Boolean);
-    setFormData((prev) => ({ ...prev, allergies: allergiesArray }));
-  };
-
   const handleImageChange = async (e) => {
-    
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -114,7 +103,7 @@ const Profile = () => {
     formDataUpload.append('image', file);
 
     try {
-      
+
       setUploading(true);
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const response = await axios.post(backendUrl + '/api/upload', formDataUpload, {
@@ -123,12 +112,12 @@ const Profile = () => {
       });
 
       if (response.data.success) {
-        const imageUrl = response.data.url;
-        setFormData((prev) => ({ ...prev, image: imageUrl }));
-        toast.success('Image uploaded successfully !');
+        setFormData((prev) => ({ ...prev, image: response.data.url }));
+        toast.success('Image uploaded successfully!');
       } else {
         toast.error('Image upload failed');
       }
+
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error during upload');
     } finally {
@@ -136,12 +125,13 @@ const Profile = () => {
     }
   };
 
-  // Soumission du formulaire
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setSaving(true);
 
     try {
+
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload = {
         name: formData.name,
@@ -149,17 +139,13 @@ const Profile = () => {
         gender: formData.gender,
         dob: formData.dob,
         address: formData.address,
-        medicalHistory: formData.medicalHistory,
-        bloodGroup: formData.bloodGroup,
-        allergies: formData.allergies,
         image: formData.image,
       };
 
-      const response = await axios.put(`/api/patients/${user.id}`, payload, config);
-
+      const response = await axios.put(backendUrl + `/api/patients/${user.id}`, payload, config);
+      
       if (response.data.success) {
-        toast.success('Profile successfully updated !');
-        user.name = formData.name; 
+        toast.success('Profile updated successfully!');
       } else {
         toast.error('Update failed');
       }
@@ -171,17 +157,14 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    toast.success('Logout');
-  };
-
   const navItems = [
-    { label: 'Dashboard', icon: FaHome, path: '/patient-dashboard' },
-    { label: 'My Appointments', icon: FaCalendarCheck, path: '/my-appointments' },
-    { label: 'My Bills', icon: FaFileInvoiceDollar, path: '/my-bills' },
-    { label: 'Profile', icon: FaUser, path: '/profile' },
+    { label: 'Dashboard', icon: FaHome, path: '/admin-dashboard' },
+    { label: 'Patients', icon: FaUsers, path: '/patients' },
+    { label: 'Doctors', icon: FaUserMd, path: '/doctors' },
+    { label: 'Appointments', icon: FaCalendarCheck, path: '/appointments' },
+    { label: 'Billing', icon: FaFileInvoiceDollar, path: '/billing' },
+    { label: 'Reports', icon: FaChartLine, path: '/reports' },
+    { label: 'Profile', icon: FaUser, path: '/admin-profile' },
   ];
 
   if (loading) {
@@ -203,12 +186,12 @@ const Profile = () => {
         user={user}
         logout={logout}
         navItems={navItems}
-        activePath="/profile"
+        activePath="/admin-profile"
       />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
         <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Admin Profile</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 hidden sm:inline">
               {new Date().toLocaleDateString('fr-FR', {
@@ -219,7 +202,7 @@ const Profile = () => {
               })}
             </span>
             <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-              {user?.name?.charAt(0) || 'U'}
+              {user?.name?.charAt(0) || 'A'}
             </div>
           </div>
         </header>
@@ -233,7 +216,7 @@ const Profile = () => {
               <div className="flex items-center gap-6 mb-6">
                 <div className="relative">
                   <img
-                    src={formData.image || 'https://via.placeholder.com/100?text=Photo'}
+                    src={formData.image || `${assets.defaultImage}`}
                     alt="Avatar"
                     className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
                   />
@@ -271,9 +254,7 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaUser className="text-gray-400" />
@@ -290,9 +271,7 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaEnvelope className="text-gray-400" />
@@ -307,9 +286,7 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaPhone className="text-gray-400" />
@@ -325,9 +302,7 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gender
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaVenusMars className="text-gray-400" />
@@ -347,9 +322,7 @@ const Profile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date of birth
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of birth</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaCalendarAlt className="text-gray-400" />
@@ -364,24 +337,8 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Blood group
-                  </label>
-                  <input
-                    type="text"
-                    name="bloodGroup"
-                    value={formData.bloodGroup}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                    placeholder="ex: A+, O-..."
-                  />
-                </div>
-
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address (line 1)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (line 1)</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaMapMarkerAlt className="text-gray-400" />
@@ -397,43 +354,13 @@ const Profile = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    City
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                   <input
                     type="text"
                     name="city"
                     value={formData.address.city}
                     onChange={handleAddressChange}
                     className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Medical history
-                  </label>
-                  <textarea
-                    name="medicalHistory"
-                    value={formData.medicalHistory}
-                    onChange={handleChange}
-                    rows="3"
-                    className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Describe your medical history..."
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Allergies (separated by commas)
-                  </label>
-                  <input
-                    type="text"
-                    name="allergies"
-                    value={formData.allergies.join(', ')}
-                    onChange={handleAllergiesChange}
-                    className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                    placeholder="ex: Penicillin, Pollen, Peanuts..."
                   />
                 </div>
               </div>
@@ -461,10 +388,12 @@ const Profile = () => {
               </div>
             </form>
           </div>
+          
         </main>
+
       </div>
     </div>
   );
 };
 
-export default Profile;
+export default AdminProfile;

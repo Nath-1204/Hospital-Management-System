@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal';
+import assets from '../assets/assets';
 import {
   FaUser, FaEnvelope, FaPhone, FaVenusMars, FaCalendarAlt,
   FaTrash, FaEye, FaHome, FaUserMd, FaUsers,
   FaCalendarCheck, FaFileInvoiceDollar, FaChartLine, FaSignOutAlt, FaBars, FaTimes,
 } from 'react-icons/fa';
-import Sidebar from '../components/Sidebar';
 
 
 const Patients = () => {
@@ -16,6 +18,7 @@ const Patients = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null, name: '' });
   const navigate = useNavigate();
   const { backendUrl, user, token, logout } = useContext(AuthContext);
 
@@ -27,7 +30,7 @@ const Patients = () => {
 
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(backendUrl + '/api/patients', config);
-
+        
         if (response.data.success) {
           setPatients(response.data.patients);
         } else {
@@ -48,17 +51,21 @@ const Patients = () => {
     }
   }, [token, user, navigate]);
 
-  const handleDelete = async (id, name) => {
+  const handleDelete = (id, name) => {
+    setConfirmModal({ isOpen: true, id, name });
+  };
 
-    if (!window.confirm(`Are you sure you want to delete patient "${name}"?`)) return;
-    
+  const confirmDelete = async () => {
+
+    const { id, name } = confirmModal;
+
     try {
 
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const response = await axios.delete(backendUrl + `/api/patients/${id}`, config);
       
       if (response.data.success) {
-        toast.success('Patient deleted successfully');
+        toast.success(`Patient "${name}" deleted successfully`);
         setPatients(patients.filter((p) => p._id !== id));
       } else {
         toast.error('Deletion failed');
@@ -66,7 +73,13 @@ const Patients = () => {
 
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error during deletion');
+    } finally {
+      setConfirmModal({ isOpen: false, id: null, name: '' });
     }
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, id: null, name: '' });
   };
 
   const navItems = [
@@ -76,7 +89,7 @@ const Patients = () => {
     { label: 'Appointments', icon: FaCalendarCheck, path: '/appointments' },
     { label: 'Billing', icon: FaFileInvoiceDollar, path: '/billing' },
     { label: 'Reports', icon: FaChartLine, path: '/reports' },
-    { label: 'Profile', icon: FaUser, path: '/profile' },
+    { label: 'Profile', icon: FaUser, path: '/admin-profile' },
   ];
 
   if (loading) {
@@ -152,12 +165,13 @@ const Patients = () => {
                       </th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y divide-gray-200 bg-white">
                     {patients.map((patient) => (
-                      <tr key={patient._id} className="hover:bg-gray-50 transition">
+                      <tr key={patient._id} className="hover:bg-gray-200 transition">
                         <td className="px-4 py-3 text-sm text-gray-800 flex items-center gap-2">
                           <img
-                            src={patient.image || 'https://via.placeholder.com/30'}
+                            src={patient.image || assets.defaultImage}
                             alt={patient.name}
                             className="w-8 h-8 rounded-full object-cover"
                           />
@@ -190,13 +204,22 @@ const Patients = () => {
                       </tr>
                     ))}
                   </tbody>
-                  
                 </table>
               </div>
             )}
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete patient "${confirmModal.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 };
