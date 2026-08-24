@@ -11,13 +11,11 @@ const bookAppointment = async (req, res) => {
     const { doctorId, date, time, notes } = req.body;
     const patientId = req.user.id; 
 
-    // Vérifier que le médecin existe
     const doctor = await userModel.findById(doctorId);
     if (!doctor || doctor.role !== 'doctor') {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
 
-    // Vérifier si le créneau est disponible 
     const doctorProfile = await doctorModel.findOne({ userId: doctorId });
     if (!doctorProfile) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
 
@@ -27,7 +25,6 @@ const bookAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This time slot is not available' });
     }
 
-    // Créer le rendez-vous 
     const appointment = new appointmentModel({
       patientId,
       doctorId,
@@ -41,7 +38,7 @@ const bookAppointment = async (req, res) => {
     res.status(201).json({ success: true, appointment });
 
   } catch (error) {
-    if (error.code === 11000) { // duplicate key error (conflit)
+    if (error.code === 11000) { 
       return res.status(409).json({ success: false, message: 'This time slot is already booked by another patient' });
     }
     res.status(500).json({ success: false, message: error.message });
@@ -81,7 +78,6 @@ const updateAppointmentStatus = async (req, res) => {
     const appointment = await appointmentModel.findById(id);
     if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found' });
 
-    // Vérifier les permissions 
     if (req.user.role === 'patient' && status !== 'cancelled') {
       return res.status(403).json({ success: false, message: 'Action not authorized' });
     }
@@ -104,7 +100,6 @@ const updatePrescription = async (req, res) => {
     const appointment = await appointmentModel.findById(id);
     if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found' });
 
-    // Seul le médecin concerné ou l'admin peut modifier
     if (req.user.role !== 'admin' && appointment.doctorId.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Accès interdit' });
     }

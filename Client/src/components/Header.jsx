@@ -27,6 +27,7 @@ const Header = ({ title, user }) => {
             {user?.name?.charAt(0) || 'A'}
           </div>
         )}
+        
       </div>
     </header>
   );

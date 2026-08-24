@@ -155,7 +155,7 @@ const Profile = () => {
         image: formData.image,
       };
 
-      const response = await axios.put(`/api/patients/${user.id}`, payload, config);
+      const response = await axios.put(backendUrl + `/api/patients/${user.id}`, payload, config);
 
       if (response.data.success) {
         toast.success('Profile successfully updated !');

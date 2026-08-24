@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaStethoscope, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import assets from '../assets/assets';
 
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, user, logout, navItems, activePath }) => {
@@ -38,7 +39,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, user, logout, navItems, activePa
         }`}
       >
         <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold flex-shrink-0">
-          {user?.name?.charAt(0) || 'U'}
+          <img
+            src={user?.image || assets.defaultImage}
+            alt={user?.name}
+            className="w-8 h-8 rounded-full object-cover"
+          />
         </div>
         {sidebarOpen && (
           <div className="flex-1 min-w-0">
@@ -48,7 +53,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, user, logout, navItems, activePa
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4">
         {navItems.map((item) => (
           <a

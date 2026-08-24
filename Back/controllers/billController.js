@@ -1,5 +1,6 @@
 import billModel from '../models/billModel.js';
 import appointmentModel from '../models/appointmentModel.js';
+import doctorModel from "../models/doctorModel.js"
 
 
 const generateBill = async (req, res) => {
@@ -50,4 +51,63 @@ const getBillByAppointment = async (req, res) => {
 
 };
 
-export { generateBill, getBillByAppointment };
+const getPatientBills = async (req, res) => {
+
+  try {
+
+    const patientId = req.user.id;
+    const bills = await billModel.find({ patientId })
+      .populate('appointmentId', 'date time doctorId') 
+      .populate({
+        path: 'appointmentId',
+        populate: { path: 'doctorId', select: 'name' } 
+      })
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, bills });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getAllBills = async (req, res) => {
+
+  try {
+
+    const bills = await billModel.find()
+
+      .populate('patientId', 'name email phone')
+      .populate({
+        path: 'appointmentId',
+        populate: { path: 'doctorId', select: 'name' }
+      })
+      .sort({ createdAt: -1 });
+    res.json({ success: true, bills });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const markBillAsPaid = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const bill = await billModel.findById(id);
+
+    if (!bill) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+
+    bill.paid = true;
+    await bill.save();
+    res.json({ success: true, bill });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { generateBill, getBillByAppointment, getPatientBills, getAllBills, markBillAsPaid };

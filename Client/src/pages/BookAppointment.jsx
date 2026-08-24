@@ -4,11 +4,12 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import {
-  FaCalendarAlt, FaClock, FaStethoscope,
-  FaHome, FaUser, FaFileInvoiceDollar,
+  FaCalendarAlt, FaClock, FaStethoscope, FaHome, FaUser,
+  FaFileInvoiceDollar, FaStar, FaBriefcase, FaMoneyBillWave, FaCheckCircle,
 } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import assets from '../assets/assets';
 
 
 const BookAppointment = () => {
@@ -28,18 +29,15 @@ const BookAppointment = () => {
     const fetchDoctors = async () => {
 
       try {
-
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const url = `${backendUrl}/api/doctors/allDoctor`;
-        console.log('Fetching doctors from:', url); 
-        
-        const response = await axios.get(url, config);
+        const response = await axios.get(backendUrl + `/api/doctors/allDoctor`, config);
 
         if (response.data.success) {
           setDoctors(response.data.doctors);
         } else {
           toast.error('Unable to load the list of doctors');
         }
+
       } catch (error) {
         toast.error(error.response?.data?.message || 'Loading error');
       }
@@ -52,10 +50,11 @@ const BookAppointment = () => {
     }
   }, [token, navigate, backendUrl]);
 
+  
   useEffect(() => {
 
     if (selectedDoctor) {
-      
+
       const doctor = doctors.find((d) => d._id === selectedDoctor);
 
       if (doctor && doctor.availability) {
@@ -86,6 +85,9 @@ const BookAppointment = () => {
       .map((slot) => slot.split('T')[1]);
   };
 
+  const handleDoctorSelect = (doctorId) => {
+    setSelectedDoctor(doctorId);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,7 +100,6 @@ const BookAppointment = () => {
     setLoading(true);
 
     try {
-
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload = {
         doctorId: selectedDoctor,
@@ -107,10 +108,7 @@ const BookAppointment = () => {
         notes: '',
       };
 
-      const url = `${backendUrl}/api/appointments/book`;
-      console.log('Booking appointment at:', url);
-       
-      const response = await axios.post(url, payload, config);
+      const response = await axios.post(backendUrl + `/api/appointments/book`, payload, config);
 
       if (response.data.success) {
         toast.success('Appointment successfully booked !');
@@ -118,7 +116,6 @@ const BookAppointment = () => {
       } else {
         toast.error(response.data.message || 'Reservation failed');
       }
-
     } catch (error) {
       const msg = error.response?.data?.message || 'Error during booking';
       toast.error(msg);
@@ -149,17 +146,68 @@ const BookAppointment = () => {
         <Header title="Make an Appointment" user={user} />
 
         <main className="flex-1 p-6">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <FaStethoscope className="text-indigo-600" /> Choose a Doctor
+              </h2>
+              {doctors.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No doctors available at the moment.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {doctors.map((doctor) => {
+                    const isSelected = selectedDoctor === doctor._id;
+                    return (
+                      <div
+                        key={doctor._id}
+                        onClick={() => handleDoctorSelect(doctor._id)}
+                        className={`bg-white rounded-xl shadow-md p-4 border-2 transition-all cursor-pointer hover:shadow-lg ${
+                          isSelected
+                            ? 'border-indigo-600 shadow-indigo-100'
+                            : 'border-transparent hover:border-indigo-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={doctor.userId?.image || assets.defaultImage}
+                            alt={doctor.userId?.name}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 truncate">{doctor.userId?.name}</p>
+                            <p className="text-sm text-indigo-600">{doctor.specialization}</p>
+                          </div>
+                          {isSelected && (
+                            <FaCheckCircle className="text-indigo-600 text-xl flex-shrink-0" />
+                          )}
+                        </div>
+
+                        <div className="mt-3 space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <FaBriefcase className="text-gray-400" size={14} />
+                            <span>{doctor.experience} years of experience</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaMoneyBillWave className="text-gray-400" size={14} />
+                            <span>{doctor.fee} Ar</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
               <h2 className="text-xl font-semibold text-gray-700 mb-6">
                 Fill in the information
               </h2>
 
               <form onSubmit={handleSubmit}>
-
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Choose a doctor
+                    Selected Doctor
                   </label>
                   <select
                     value={selectedDoctor}
