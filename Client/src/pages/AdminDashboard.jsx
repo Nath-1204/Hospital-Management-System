@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import {
   FaUserMd, FaUsers, FaCalendarCheck, FaFileInvoiceDollar, FaChartLine,
-  FaSignOutAlt, FaBars, FaTimes, FaUser, FaHospitalUser, FaStethoscope,
   FaHome, FaClock, FaMoneyBillWave,
 } from 'react-icons/fa';
-import Sidebar from '../components/Sidebar';
 
 
 const AdminDashboard = () => {
-
+  
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalDoctors: 0,
@@ -26,16 +26,15 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { backendUrl, user, token, logout } = useContext(AuthContext);
 
-
   useEffect(() => {
 
     const fetchDashboard = async () => {
 
       try {
-        
+
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(backendUrl + '/api/dashboard/admin', config);
-
+        
         if (response.data.success) {
           setStats(response.data.stats);
         } else {
@@ -63,7 +62,7 @@ const AdminDashboard = () => {
     { label: 'Appointments', icon: FaCalendarCheck, path: '/appointments' },
     { label: 'Billing', icon: FaFileInvoiceDollar, path: '/billing' },
     { label: 'Reports', icon: FaChartLine, path: '/reports' },
-    { label: 'Profile', icon: FaUser, path: '/admin-profile' },
+    { label: 'Profile', icon: FaUserMd, path: '/admin-profile' },
   ];
 
   const statsCards = [
@@ -122,22 +121,7 @@ const AdminDashboard = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">
-              {new Date().toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </span>
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-              {user?.name?.charAt(0) || 'A'}
-            </div>
-          </div>
-        </header>
+        <Header title="Admin Dashboard" user={user} />
 
         <main className="flex-1 p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -167,34 +151,23 @@ const AdminDashboard = () => {
                 View all
               </button>
             </div>
+
             {stats.recentAppointments?.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-200">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Patient
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Doctor
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Date
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Time
-                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {stats.recentAppointments.map((app, idx) => (
                       <tr key={idx} className="bg-gray-50 hover:bg-gray-100">
-                        <td className="px-4 py-2 text-sm text-gray-800">
-                          {app.patientId?.name || 'N/A'}
-                        </td>
-                        <td className="px-4 py-2 text-sm text-gray-600">
-                          {app.doctorId?.name || 'N/A'}
-                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-800">{app.patientId?.name || 'N/A'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-600">{app.doctorId?.name || 'N/A'}</td>
                         <td className="px-4 py-2 text-sm text-gray-600">
                           {new Date(app.date).toLocaleDateString('fr-FR')}
                         </td>
@@ -209,7 +182,7 @@ const AdminDashboard = () => {
             )}
           </div>
         </main>
-        
+
       </div>
     </div>
   );

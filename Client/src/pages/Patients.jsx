@@ -11,6 +11,7 @@ import {
   FaTrash, FaEye, FaHome, FaUserMd, FaUsers,
   FaCalendarCheck, FaFileInvoiceDollar, FaChartLine, FaSignOutAlt, FaBars, FaTimes,
 } from 'react-icons/fa';
+import Header from '../components/Header';
 
 
 const Patients = () => {
@@ -115,22 +116,7 @@ const Patients = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800">Patients</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">
-              {new Date().toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </span>
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-              {user?.name?.charAt(0) || 'A'}
-            </div>
-          </div>
-        </header>
+        <Header title={"Patients"} user={user}/>
 
         <main className="flex-1 p-6">
           <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
