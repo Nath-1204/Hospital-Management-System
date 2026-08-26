@@ -10,5 +10,6 @@ billRouter.get('/appointment/:appointmentId', authMiddleware, getBillByAppointme
 billRouter.get('/mybills', authMiddleware, checkRole('patient'), getPatientBills);
 billRouter.get('/admin', authMiddleware, checkRole('admin'), getAllBills);
 billRouter.put('/:id', authMiddleware, checkRole('admin'), markBillAsPaid);
+billRouter.get('/:id', authMiddleware, getAllBills);
 
 export default billRouter;

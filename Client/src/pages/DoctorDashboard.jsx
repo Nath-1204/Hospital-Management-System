@@ -66,7 +66,7 @@ const DoctorDashboard = () => {
     { label: 'Dashboard', icon: FaHome, path: '/doctor-dashboard' },
     { label: 'My Appointments', icon: FaCalendarCheck, path: '/doctor-appointments' },
     { label: 'Prescriptions', icon: FaPrescription, path: '/prescriptions' },
-    { label: 'Profile', icon: FaUser, path: '/doctorprofile' },
+    { label: 'Profile', icon: FaUser, path: '/doctor-profile' },
   ];
 
   const statsCards = [

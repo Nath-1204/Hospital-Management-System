@@ -16,6 +16,7 @@ const Header = ({ title, user }) => {
             year: 'numeric',
           })}
         </span>
+        
         {user?.image ? (
           <img
             src={user.image}

@@ -137,5 +137,9 @@ const deletePatient = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
- 
-export { getAllPatients, getPatientProfile, updatePatientProfile, deletePatient };
+
+
+export { 
+  getAllPatients, getPatientProfile, 
+  updatePatientProfile, deletePatient,
+};

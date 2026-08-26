@@ -110,4 +110,27 @@ const markBillAsPaid = async (req, res) => {
   }
 };
 
-export { generateBill, getBillByAppointment, getPatientBills, getAllBills, markBillAsPaid };
+// Récupérer une facture par son ID
+const getBillById = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const bill = await billModel.findById(id)
+      .populate('patientId', 'name email phone')
+      .populate({
+        path: 'appointmentId',
+        populate: { path: 'doctorId', select: 'name' }
+      });
+
+    if (!bill) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+    res.json({ success: true, bill });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { generateBill, getBillByAppointment, getPatientBills, getAllBills, markBillAsPaid, getBillById };

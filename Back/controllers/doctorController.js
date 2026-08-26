@@ -104,4 +104,101 @@ const deleteDoctor = async (req, res) => {
   }
 };
 
-export { createDoctor, getAllDoctors, updateDoctorAvailability, deleteDoctor };
+// Récupérer le profil du docteur connecté
+const getDoctorProfile = async (req, res) => {
+
+  try {
+
+    const userId = req.user.id;
+    const user = await userModel.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const doctor = await doctorModel.findOne({ userId });
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    }
+
+    res.json({
+      success: true,
+      doctor: {
+        ...user._doc,
+        specialization: doctor.specialization,
+        experience: doctor.experience,
+        fee: doctor.fee,
+        availability: doctor.availability,
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Mettre à jour le profil du docteur
+const updateDoctorProfile = async (req, res) => {
+
+  try {
+
+    const userId = req.user.id;
+    const { name, phone, gender, dob, address, image, specialization, experience, fee, availability } = req.body;
+
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      { $set: { name, phone, gender, dob, address, image } },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const doctor = await doctorModel.findOneAndUpdate(
+      { userId },
+      { $set: { specialization, experience, fee, availability } },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      doctor: {
+        ...user._doc,
+        specialization: doctor.specialization,
+        experience: doctor.experience,
+        fee: doctor.fee,
+        availability: doctor.availability,
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Récupérer un médecin par son ID
+const getDoctorById = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const doctor = await doctorModel.findById(id).populate('userId', 'name email image phone address gender dob');
+    
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+    res.json({ success: true, doctor });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { 
+  createDoctor, getAllDoctors, 
+  updateDoctorAvailability, 
+  deleteDoctor, getDoctorProfile,
+  updateDoctorProfile , getDoctorById,
+};
