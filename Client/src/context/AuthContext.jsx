@@ -4,7 +4,7 @@ export const AuthContext = createContext();
 
 const AuthContextProvider = (props) => {
 
-    const backendUrl = import.meta.env.BackendURL || 'http://localhost:5000'; 
+    const backendUrl = import.meta.env.BackendURL || 'http://localhost:5000' || "https://hospital-management-system-tau-tawny-53.vercel.app/"; 
     const [user, setUser] = useState(() => {
         const stored = localStorage.getItem('user');
         return stored ? JSON.parse(stored) : null;
